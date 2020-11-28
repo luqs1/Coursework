@@ -3,24 +3,24 @@ import java.util.ArrayList;
 
 public class Explorer {
 
-  private Surroundings surroundings = new Surroundings(); // A class i made for working one which directions were passages and nonWalls.
+  private final Surroundings surroundings = new Surroundings(); // A class i made for working one which directions were passages and nonWalls.
   
   public void controlRobot(IRobot robot) {
     surroundings.refresh(robot);  //Works out the surroundings again for this tick.
     int direction = IRobot.AHEAD;
-    switch(surroundings.nonwallExits){
+    switch(surroundings.nonWall.numberOf){
       case 1:
         //System.out.println("Dead End");
-	      direction = deadEnd(robot);
+	      direction = deadEnd();
 	      break;
       case 2:
         //System.out.println("Corridor/ Corner");
-	      direction = corridor(robot); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
+	      direction = corridor(); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
 	      break;
       case 3:
       case 4:
         //System.out.println("Crossroads or Junction");
-	      direction = crossroads(robot); // Both Crossroads and Junctions are equivalent.
+	      direction = junction(); // Both Crossroads and Junctions are equivalent.
 	      break;
     }
     //System.out.println(surroundings.nonwallExits);
@@ -28,7 +28,7 @@ public class Explorer {
     robot.face(direction);
   }
   
-  private int randomlySelect(IRobot robot, boolean[] array){  // This returns a random valid direction from an array of direction validity.
+  private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.
     ArrayList<Integer> chosen = new ArrayList<Integer>();
     for (int i=0; i < 4; i++){ 
       if (array[i] && i != 2) // Doesn't check or include BEHIND.
@@ -39,78 +39,71 @@ public class Explorer {
     return (IRobot.AHEAD + chosen.get(randno));
   }  
   
-  private int deadEnd(IRobot robot) { // Looks through the Surroundings to find the only nonWallExit and returns it.
+  private int deadEnd() { // Looks through the Surroundings to find the only nonWallExit and returns it.
     for (int i=0; i < 4; i++){
-      if (surroundings.isNonWall[i])
+      if (surroundings.nonWall.isType[i])
         return (IRobot.AHEAD + i);
     }
     return -1; // Error code
   }
   
-  private int corridor(IRobot robot){ // Doesn't check for optimal passage as there is only direction to choose anyway.
-    return randomlySelect(robot, surroundings.isNonWall);
+  private int corridor(){ // Doesn't check for optimal passage as there is only direction to choose anyway.
+    return randomlySelect(surroundings.nonWall.isType);
   }
   
-  private int crossroads(IRobot robot){ // Does try to go for a passage if possible.
-    if (surroundings.passageExits == 0)
-      return randomlySelect(robot,surroundings.isNonWall);
-    return randomlySelect(robot, surroundings.isPassage);
+  private int junction(){ // Does try to go for a passage if possible.
+    if (surroundings.passage.numberOf == 0)
+      return randomlySelect(surroundings.nonWall.isType);
+    return randomlySelect(surroundings.passage.isType);
   }
 
   public class RobotData {
     public int junctionCounter;
     ArrayList<Junction> junctions = new ArrayList<Junction>();
+
+    public class Junction {
+      int x;
+      int y;
+      int arrivalHeading;
   }
 
-  public class Junction {
-    int x;
-    int y;
-    int arrivalHeading;
   }
   public class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
-    public boolean[] isPassage = new boolean[4];
-    
-    public boolean[] isNonWall = new boolean[4];
-    
-    public int nonwallExits;
-    
-    public int passageExits;
-    
-    public void refresh(IRobot robot) { // runs every tick of controlRobot to get the surroundings again.
-      this.isPassage = new boolean[4];
-      this.isNonWall = new boolean[4];
-      nonwallExitsCreate(robot);
-      passageExitsCreate(robot);
+
+    public ExitType nonWall;
+    public ExitType passage;
+    public ExitType beenBefore;
+
+    public class ExitType { // A class that lets you have a counter and array for each type of exit.
+      public int numberOf;  // The number of such exits.
+      public boolean[] isType; // true if the exit is of ExitType starting with Forward going clockwise.
+
+      public ExitType(int num, boolean[] array) {
+        numberOf = num;
+        isType = array;
       }
-    
-    private void nonwallExitsCreate(IRobot robot) {
-      /* This method sets the number of exits that aren't a wall
-      and sets the value for each element in the isNonWall array.
-      */
-      int output=0;
-      for (int i=0; i<4; i++){
-        if (robot.look(IRobot.AHEAD + i) != IRobot.WALL) {
-          output++;
-          this.isNonWall[i] = true;
-        }
-      }
-      this.nonwallExits = output;
     }
     
-    private void passageExitsCreate(IRobot robot) {
-      /* This method sets the number of exits that are a passage
-      (not already explored as well as notreturn output wall) and sets the values
-      for the isPassage array. */
-    
-      int output=0;
-      for (int i=0; i<4; i++){
-        if (robot.look(IRobot.AHEAD + i) == IRobot.PASSAGE) {
-          output++;
-          this.isPassage[i] = true;
+    public void refresh(IRobot robot) { // runs every tick of controlRobot to get the surroundings again.
+      nonWall = exitsCreate(robot, IRobot.WALL, true);
+      passage = exitsCreate(robot, IRobot.PASSAGE, false);
+      beenBefore = exitsCreate(robot, IRobot.BEENBEFORE, false);
+    }
+
+    private ExitType exitsCreate(IRobot robot, int object, boolean invert) { // creates an ExitType
+      /* The object is what is being checked for: like WALL, PASSAGE and BEENBEFORE.
+      * invert will allow you to get a count and array of the squares that aren't of object.
+      * */
+      int counter=0;
+      boolean[] array = new boolean[4];
+      for (int i=0; i<4; i++) {
+        if (invert != (robot.look(IRobot.AHEAD + i) == object)) {
+          counter++;
+          array[i] = true;
         }
       }
-      this.passageExits = output;
+      return new ExitType(counter, array);
     }
   }
 }
