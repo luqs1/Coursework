@@ -1,31 +1,76 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
+
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Explorer {
-
-  private final Surroundings surroundings = new Surroundings(); // A class i made for working one which directions were passages and nonWalls.
+  private int pollRun = 0;
+  private boolean explorerMode; // true for explorer, false for backtracking
+  private RobotData robotData;
+  private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
   
   public void controlRobot(IRobot robot) {
+
+    if ((robot.getRuns() == 0) && (pollRun == 0)) {
+      robotData = new RobotData();
+      explorerMode = true;
+    }
+    pollRun++;
     surroundings.refresh(robot);  //Works out the surroundings again for this tick.
+
+    if (explorerMode)
+      exploreControl(robot);
+    else
+      backtrackControl(robot);
+  }
+
+  private void exploreControl(IRobot robot){
     int direction = IRobot.AHEAD;
     switch(surroundings.nonWall.numberOf){
       case 1:
         //System.out.println("Dead End");
-	      direction = deadEnd();
-	      break;
+        direction = deadEnd();
+        explorerMode = false;  // Should start backtracking here.
+        break;
       case 2:
         //System.out.println("Corridor/ Corner");
-	      direction = corridor(); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
-	      break;
+        direction = corridor(); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
+        break;
       case 3:
       case 4:
         //System.out.println("Crossroads or Junction");
-	      direction = junction(); // Both Crossroads and Junctions are equivalent.
-	      break;
+        direction = junction(); // Both Crossroads and Junctions are equivalent.
+        robotData.recordJunction(robot.getLocation(), robot); // Records Junction in RobotData.
+        robotData.printJunction(robotData.getJunction(robot.getLocation()));
+        break;
     }
-    //System.out.println(surroundings.nonwallExits);
-    //System.out.println(surroundings.passageExits);
+    //System.out.println(surroundings.nonWall.numberOf);
+    //System.out.println(surroundings.passage.numberOf);
     robot.face(direction);
+  }
+
+  private void backtrackControl(IRobot robot){
+    int direction = IRobot.AHEAD;
+    switch (surroundings.nonWall.numberOf){
+      case 1:
+        direction = deadEnd();
+        break;
+      case 2:
+        direction = corridor();
+        break;
+      case 3:
+      case 4:
+        if (surroundings.passage.numberOf > 0){
+          explorerMode = true;
+        }
+
+    }
+  }
+
+  public void reset() {
+    robotData.resetJunctionCounter();
   }
   
   private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.
@@ -34,9 +79,9 @@ public class Explorer {
       if (array[i] && i != 2) // Doesn't check or include BEHIND.
 	      chosen.add(i);
     }
-    int randno = (int) Math.floor(Math.random()*chosen.size());
-    //System.out.println(chosen.get(randno));
-    return (IRobot.AHEAD + chosen.get(randno));
+    int randNo = (int) Math.floor(Math.random()*chosen.size());
+    //System.out.println(chosen.get(randNo));
+    return (IRobot.AHEAD + chosen.get(randNo));
   }  
   
   private int deadEnd() { // Looks through the Surroundings to find the only nonWallExit and returns it.
@@ -57,18 +102,59 @@ public class Explorer {
     return randomlySelect(surroundings.passage.isType);
   }
 
-  public class RobotData {
+  private class RobotData {
     public int junctionCounter;
-    ArrayList<Junction> junctions = new ArrayList<Junction>();
 
-    public class Junction {
-      int x;
-      int y;
-      int arrivalHeading;
+    public class Junction extends Point {
+      public int arrivalHeading;
+
+      public Junction(int x, int y, int heading) {
+        super(x, y);
+        arrivalHeading = heading;
+      }
+
+      public String toString() {
+        return "Junction{" +
+                "arrivalHeading=" + arrivalHeading +
+                super.toString() + '}';
+      }
+    }
+
+    private Map<Point, Junction> junctions = new HashMap<>(); // Is private to enforce use of recordJunction and getJunction.
+    /* For any Point in the maze, returns the junction. Could have reduced memory usage with <Point, Integer>, with the
+    heading as an Integer, and then returned new Junction(point.x, point.y, heading), but it's not scalable if we add more than a heading.
+     */
+
+    public void resetJunctionCounter() {
+      junctionCounter = 0; // Tne behaviour of this function will need to be redesigned for when we try to remember Maze Solutions.
+      junctions = new HashMap<>();
+    }
+
+    public void recordJunction(Point point, IRobot robot) {
+      int heading = robot.getHeading();
+      if (junctions.get(point) == null) { // This makes sure junctions aren't overwritten.
+        junctions.put(point, new Junction(point.x, point.y, heading));
+        junctionCounter++;
+      }
+    }
+
+    public Junction getJunction(Point point) {
+      return junctions.get(point);
+    }
+
+    public int searchJunction(Point point) {
+      Junction junction  = junctions.get(point);
+      if (junction != null)
+        return junction.arrivalHeading; // returns the heading.
+      return -1; // This is an error
+    }
+
+    public void printJunction(Junction junction) {
+      System.out.println(junction.toString());
+    }
   }
 
-  }
-  public class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
+  private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
 
     public ExitType nonWall;
