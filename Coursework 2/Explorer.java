@@ -8,19 +8,16 @@ import java.util.Map;
 public class Explorer {
   private RobotData robotData;
   private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
+  // made before knowledge of robotData.
 
   private int pollRun = 0;
   private boolean explorerMode; // true for explorer, false for backtracking
-  private boolean invertBacktracking;
-  private Point startLocation;
 
   public void controlRobot(IRobot robot) {
 
     if ((robot.getRuns() == 0) && (pollRun == 0)) {
       robotData = new RobotData();
       explorerMode = true;
-      invertBacktracking = false;
-      startLocation = robot.getLocation();
     }
     pollRun++;
     surroundings.refresh(robot);  //Works out the surroundings again for this tick.
@@ -65,22 +62,15 @@ public class Explorer {
       case 3:
       case 4:
         if (surroundings.passage.numberOf > 0){
-          invertBacktracking = false;
           explorerMode = true;  //Going down unexplored path.
           exploreControl(robot); //Again, there's no point in rewriting code for minimal improvement.
         }
         else {
-          if (robot.getLocation() == startLocation)
-            invertBacktracking = true;
           int arrivalHeading = robotData.searchJunction(robot.getLocation());
-          if (invertBacktracking)
-            robot.setHeading(arrivalHeading);
-          else {
-            int headingShift = (arrivalHeading - IRobot.NORTH) - 2;
-            headingShift = headingShift < 0 ? headingShift + 4 : headingShift;
-            robot.setHeading(IRobot.NORTH + headingShift);
-            // Altogether does the equivalent of using a circular array.
-          }
+          int headingShift = (arrivalHeading - IRobot.NORTH) -2;
+          headingShift = headingShift < 0? headingShift + 4: headingShift;
+          robot.setHeading(IRobot.NORTH + headingShift);
+          // Altogether does the equivalent of using a circular array.
         }
     }
   }
