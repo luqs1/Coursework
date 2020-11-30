@@ -1,11 +1,9 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Explorer {
-  private RobotData robotData;
+  private EfficientRobotData robotData;
   private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
   // made before knowledge of robotData.
 
@@ -15,7 +13,7 @@ public class Explorer {
   public void controlRobot(IRobot robot) {
 
     if ((robot.getRuns() == 0) && (pollRun == 0)) {
-      robotData = new RobotData();
+      robotData = new EfficientRobotData();
       explorerMode = true;
     }
     pollRun++;
@@ -43,8 +41,8 @@ public class Explorer {
       case 4:
         //System.out.println("Crossroads or Junction");
         direction = junction(); // Both Crossroads and Junctions are equivalent.
-        robotData.recordJunction(robot.getLocation(), robot); // Records Junction in RobotData.
-        robotData.printJunction(robotData.getJunction(robot.getLocation()));
+        robotData.recordJunction(robot); // Records Junction in RobotData.
+        robotData.printJunction();
         break;
     }
     //System.out.println(surroundings.nonWall.numberOf);
@@ -65,7 +63,7 @@ public class Explorer {
           exploreControl(robot); //Again, there's no point in rewriting code for minimal improvement.
         }
         else {
-          int arrivalHeading = robotData.searchJunction(robot.getLocation());
+          int arrivalHeading = robotData.searchJunction();
           int headingShift = (arrivalHeading - IRobot.NORTH) -2;
           headingShift = headingShift < 0? headingShift + 4: headingShift;
           robot.setHeading(IRobot.NORTH + headingShift);
@@ -107,6 +105,51 @@ public class Explorer {
     return randomlySelect(surroundings.passage.isType);
   }
 
+  private class EfficientRobotData {  //TODO: Definitely erroneous use of stack somewhere. Need to debug and analyse properly.
+
+    public class Junction{
+      public int arrivalHeading;
+
+      public Junction(int heading) {
+        arrivalHeading = heading;
+      }
+
+      public String toString() {
+        return "Junction{" +
+                "arrivalHeading=" + arrivalHeading +
+                super.toString() + '}';
+      }
+    }
+
+    LinkedList<Junction> junctions = new LinkedList<>();
+
+    public int junctionCounter;
+
+    public void resetJunctionCounter(){
+      junctionCounter = 0;
+      LinkedList<Junction> junctions = new LinkedList<>();
+    }
+
+    public void printJunction(){
+      System.out.println(getJunction());
+    }
+
+    public Junction getJunction(){
+      return junctions.getLast();
+    }
+
+    public void recordJunction(IRobot robot){
+      int heading = robot.getHeading();
+      Junction junction = new Junction(heading);
+      junctions.add(junction);
+    }
+
+    public int searchJunction(){
+      return junctions.removeLast().arrivalHeading;
+    }
+
+  }
+  /*
   private class RobotData {
     public int junctionCounter;
 
@@ -126,9 +169,9 @@ public class Explorer {
     }
 
     private Map<Point, Junction> junctions = new HashMap<>(); // Is private to enforce use of recordJunction and getJunction.
-    /* For any Point in the maze, returns the junction. Could have reduced memory usage with <Point, Integer>, with the
-    heading as an Integer, and then returned new Junction(point.x, point.y, heading), but it's not scalable if we add more than a heading.
-     */
+    // For any Point in the maze, returns the junction. Could have reduced memory usage with <Point, Integer>, with the
+    // heading as an Integer, and then returned new Junction(point.x, point.y, heading), but it's not scalable if we add more than a heading.
+
 
     public void resetJunctionCounter() {
       junctionCounter = 0; // Tne behaviour of this function will need to be redesigned for when we try to remember Maze Solutions.
@@ -158,6 +201,7 @@ public class Explorer {
       System.out.println(junction.toString());
     }
   }
+  */
 
   private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
