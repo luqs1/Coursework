@@ -25,7 +25,7 @@ public class Explorer {
       backtrackControl(robot);
   }
 
-  private void exploreControl(IRobot robot){
+  private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
     int direction = IRobot.AHEAD;
     switch(surroundings.nonWall.numberOf){
       case 1:
@@ -42,7 +42,6 @@ public class Explorer {
         //System.out.println("Crossroads or Junction");
         direction = junction(); // Both Crossroads and Junctions are equivalent.
         robotData.recordJunction(robot); // Records Junction in RobotData.
-        robotData.printJunction();
         break;
     }
     //System.out.println(surroundings.nonWall.numberOf);
@@ -53,21 +52,23 @@ public class Explorer {
   private void backtrackControl(IRobot robot){
     switch (surroundings.nonWall.numberOf){
       case 1:
+	robot.face(deadEnd());
+	break;
       case 2:
-        exploreControl(robot); //Delegate to exploreC. This might be changed depending on future exploreC behaviour.
+        robot.face(corridor());
         break;
       case 3:
       case 4:
         if (surroundings.passage.numberOf > 0){
           explorerMode = true;  //Going down unexplored path.
-          exploreControl(robot); //Again, there's no point in rewriting code for minimal improvement.
+          robot.face(junction());
         }
         else {
           int arrivalHeading = robotData.searchJunction();
           int headingShift = (arrivalHeading - IRobot.NORTH) -2;
           headingShift = headingShift < 0? headingShift + 4: headingShift;
           robot.setHeading(IRobot.NORTH + headingShift);
-          // Altogether does the equivalent of using a circular array.
+          // Altogether does the equivalent of using a circular array for the headings.
         }
     }
   }
@@ -105,47 +106,36 @@ public class Explorer {
     return randomlySelect(surroundings.passage.isType);
   }
 
-  private class EfficientRobotData {  //TODO: Definitely erroneous use of stack somewhere. Need to debug and analyse properly.
+  private class EfficientRobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
-    public class Junction{
-      public int arrivalHeading;
+    List<Integer> junctions = new LinkedList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
+    
+    // My previous implementation had a Junction class which I removed, as it would only store heading, to save more space.
 
-      public Junction(int heading) {
-        arrivalHeading = heading;
-      }
-
-      public String toString() {
-        return "Junction{" +
-                "arrivalHeading=" + arrivalHeading +
-                super.toString() + '}';
-      }
+    public int junctionCounter() {  // No longer needs to be independently stored. Is now equivalent to the size of the list.
+      junctions.size();
     }
-
-    LinkedList<Junction> junctions = new LinkedList<>();
-
-    public int junctionCounter;
 
     public void resetJunctionCounter(){
-      junctionCounter = 0;
-      LinkedList<Junction> junctions = new LinkedList<>();
+      List<Integer> junctions = new LinkedList<>();
     }
 
-    public void printJunction(){
+    public void printJunction(){  // Acts more like printHeading now.
       System.out.println(getJunction());
     }
 
-    public Junction getJunction(){
+    public Integer getJunction(){
       return junctions.getLast();
     }
 
     public void recordJunction(IRobot robot){
       int heading = robot.getHeading();
-      Junction junction = new Junction(heading);
-      junctions.add(junction);
+      junctions.add(heading);
+      //System.out.println(robot.getLocation());
     }
 
     public int searchJunction(){
-      return junctions.removeLast().arrivalHeading;
+      return junctions.removeLast();
     }
 
   }
