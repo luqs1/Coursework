@@ -8,12 +8,17 @@ Luqmaan Ahmed Exercise 3
 NOTE
 My exercise 2 and 3 are equivalent. Thus I can only contrast Ex2/3 with Ex1.
 
+For the record, I think that If i didn't record every junction as i did in Ex2, but recorded junctions selectively based
+on the number of BeenBefore cells, there would be a possibility of that program failing on loopy mazes.
+
+ENDNOTE
+
 My robot in Exercise 1 could only store 1 heading per cell on the maze, this meant that if the robot followed a loop and
 started backtracking, it could only backtrack with either the more recent heading, or the older heading.
 
 My exercise 2/3 program used a stack and recorded every junction it came across. However as it was naive to where it was
 on the maze, it was able to store multiple headings for the same cell. This meant that when backtracking it would always
-be able to backtrack the "long way" out which gurantees that it finds all the passages that are possible if the maze was
+be able to backtrack the "long way" out which guarantees that it finds all the passages that are possible if the maze was
 solvable.
 
 I think a good analogy to understand this is one explorer marking which way they came on each tile of a maze, and another
