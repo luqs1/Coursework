@@ -98,14 +98,16 @@ public class Ex1 {
   private void backtrackControl(IRobot robot){
     switch (surroundings.nonWall.numberOf){
       case 1:
+        robot.face(deadEnd());
+        break;
       case 2:
-        exploreControl(robot); //Delegate to exploreC. This might be changed depending on future exploreC behaviour.
+        robot.face(corridor()); // 1 and 2 are equivalent to exploreControl bar the explorerMode change.
         break;
       case 3:
       case 4:
         if (surroundings.passage.numberOf > 0){
           explorerMode = true;  //Going down unexplored path.
-          exploreControl(robot); //Again, there's no point in rewriting code for minimal improvement.
+          robot.face(junction());
         }
         else {
           int arrivalHeading = robotData.searchJunction(robot.getLocation());

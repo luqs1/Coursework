@@ -1,13 +1,17 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
-import java.awt.Point;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.ArrayList;
+
+/*
+Luqmaan Ahmed Exercise
+ */
 
 public class Explorer {
   private EfficientRobotData robotData;
   private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
   // made before knowledge of robotData.
 
-  private int pollRun = 0;
+  private int pollRun = 0; // Counts which "tick".
   private boolean explorerMode; // true for explorer, false for backtracking
 
   public void controlRobot(IRobot robot) {
@@ -49,17 +53,17 @@ public class Explorer {
     robot.face(direction);
   }
 
-  private void backtrackControl(IRobot robot){
+  private void backtrackControl(IRobot robot){ // Backtracking mode, activates after a junction.
     switch (surroundings.nonWall.numberOf){
       case 1:
-	robot.face(deadEnd());
-	break;
+	    robot.face(deadEnd());
+	    break;
       case 2:
-        robot.face(corridor());
+        robot.face(corridor()); // 1 and 2 are equivalent to exploreControl bar the explorerMode change.
         break;
       case 3:
       case 4:
-        if (surroundings.passage.numberOf > 0){
+        if (surroundings.passage.numberOf > 0){  // This is the case when explorable passages are available.
           explorerMode = true;  //Going down unexplored path.
           robot.face(junction());
         }
@@ -108,33 +112,33 @@ public class Explorer {
 
   private class EfficientRobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
-    List<Integer> junctions = new LinkedList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
+    LinkedList<Integer> junctions = new LinkedList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
     
     // My previous implementation had a Junction class which I removed, as it would only store heading, to save more space.
 
     public int junctionCounter() {  // No longer needs to be independently stored. Is now equivalent to the size of the list.
-      junctions.size();
+      return junctions.size();
     }
 
-    public void resetJunctionCounter(){
-      List<Integer> junctions = new LinkedList<>();
+    public void resetJunctionCounter(){ // When maze resets.
+      LinkedList<Integer> junctions = new LinkedList<>();
     }
 
     public void printJunction(){  // Acts more like printHeading now.
       System.out.println(getJunction());
     }
 
-    public Integer getJunction(){
+    public Integer getJunction(){ //For Debugging, doesn't pop.
       return junctions.getLast();
     }
 
-    public void recordJunction(IRobot robot){
+    public void recordJunction(IRobot robot){ // Pushes junction to the junctions stack.
       int heading = robot.getHeading();
       junctions.add(heading);
       //System.out.println(robot.getLocation());
     }
 
-    public int searchJunction(){
+    public int searchJunction(){ // Pops junction from stack.
       return junctions.removeLast();
     }
 
