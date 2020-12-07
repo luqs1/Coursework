@@ -1,5 +1,6 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
-import java.util.LinkedList;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /*
@@ -112,7 +113,7 @@ public class Explorer {
 
   private class EfficientRobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
-    LinkedList<Integer> junctions = new LinkedList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
+    ArrayList<Integer> junctions = new ArrayList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
     
     // My previous implementation had a Junction class which I removed, as it would only store heading, to save more space.
 
@@ -121,7 +122,7 @@ public class Explorer {
     }
 
     public void resetJunctionCounter(){ // When maze resets.
-      LinkedList<Integer> junctions = new LinkedList<>();
+      ArrayList<Integer> junctions = new ArrayList<>();
     }
 
     public void printJunction(){  // Acts more like printHeading now.
@@ -129,7 +130,7 @@ public class Explorer {
     }
 
     public Integer getJunction(){ //For Debugging, doesn't pop.
-      return junctions.getLast();
+      return junctions.get(junctionCounter()-1);
     }
 
     public void recordJunction(IRobot robot){ // Pushes junction to the junctions stack.
@@ -139,7 +140,7 @@ public class Explorer {
     }
 
     public int searchJunction(){ // Pops junction from stack.
-      return junctions.removeLast();
+      return junctions.remove(junctionCounter()-1);
     }
 
   }
