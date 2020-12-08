@@ -1,51 +1,75 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GrandFinale {
+    private final String[] headings = {"North", "East", "South", "West"};
     private RobotData robotData;
     private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
     // made before knowledge of robotData.
 
     private int pollRun = 0; // Counts which "tick".
     private boolean explorerMode; // true for explorer, false for backtracking
+    private boolean seerMode;
 
     public void controlRobot(IRobot robot) {
 
         if ((robot.getRuns() == 0) && (pollRun == 0)) {
             robotData = new RobotData();
             explorerMode = true;
+            seerMode = false;
+            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
         }
+
+        else if ((robot.getRuns() > 0) & !seerMode) {
+            seerMode = true;
+            System.out.println("Going for the 2nd time or more.");
+            pollRun = 0;
+        }
+
         pollRun++;
         surroundings.refresh(robot);  //Works out the surroundings again for this tick.
-
-        if (explorerMode)
+        if (pollRun == 1 && seerMode)
+            robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
+        else if (explorerMode)
             exploreControl(robot);
         else
             backtrackControl(robot);
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
+        boolean recording = false;
         int direction = IRobot.AHEAD;
         switch(surroundings.nonWall.numberOf){
             case 1:
                 //System.out.println("Dead End");
-                direction = deadEnd();
+                robot.face(deadEnd());
                 explorerMode = false;  // Should start backtracking here.
                 break;
             case 2:
                 //System.out.println("Corridor/ Corner");
-                direction = corridor(); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
+                robot.face(corridor()); //Corridor would also work with the crossroads method I've defined, but is more efficient this way.
                 break;
             case 3:
             case 4:
-                //System.out.println("Crossroads or Junction");
-                direction = junction(); // Both Crossroads and Junctions are equivalent.
-                robotData.recordJunction(robot); // Records Junction in RobotData.
+                if (seerMode) {
+                    robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
+                }
+                else {
+                    //System.out.println("Crossroads or Junction");
+                    robotData.recordJunction(robot); // Records Junction in RobotData.
+                    robot.face(junction()); // Both Crossroads and Junctions are equivalent.
+                    recording = true;
+                }
                 break;
         }
         //System.out.println(surroundings.nonWall.numberOf);
         //System.out.println(surroundings.passage.numberOf);
-        robot.face(direction);
+        if (recording) {
+            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+        }
     }
 
     private void backtrackControl(IRobot robot){ // Backtracking mode, activates after a junction.
@@ -61,6 +85,7 @@ public class GrandFinale {
                 if (surroundings.passage.numberOf > 0){  // This is the case when explorable passages are available.
                     explorerMode = true;  //Going down unexplored path.
                     robot.face(junction());
+                    robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
                 }
                 else {
                     int arrivalHeading = robotData.searchJunction();
@@ -108,7 +133,7 @@ public class GrandFinale {
     private class RobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
         ArrayList<Integer> junctions = new ArrayList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
-        ArrayList<Integer> altJunctions = new ArrayList<>();
+        public Map<Point, Integer> altJunctions = new HashMap<>();
 
         // My previous implementation had a Junction class which I removed, as it would only store heading, to save more space.
 
@@ -118,7 +143,7 @@ public class GrandFinale {
 
         public void resetJunctionCounter(){ // When maze resets.
             junctions = new ArrayList<>();
-            altJunctions = new ArrayList<>();
+            System.out.println(altJunctions);
         }
 
         public void printJunction(){  // Acts more like printHeading now.
