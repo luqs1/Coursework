@@ -142,7 +142,7 @@ public class Ex3 {
     }
 
     public void resetJunctionCounter(){ // When maze resets.
-      ArrayList<Integer> junctions = new ArrayList<>();
+      junctions = new ArrayList<>();
     }
 
     public void printJunction(){  // Acts more like printHeading now.
