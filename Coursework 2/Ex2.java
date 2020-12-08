@@ -1,5 +1,4 @@
 import uk.ac.warwick.dcs.maze.logic.IRobot;
-
 import java.util.ArrayList;
 
 /*
