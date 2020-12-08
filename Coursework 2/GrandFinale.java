@@ -20,7 +20,7 @@ public class GrandFinale {
             robotData = new RobotData();
             explorerMode = true;
             seerMode = false;
-            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+            //robotData.altJunctions.put(robot.getLocation(), robot.getHeading()); // I think it becomes redundant.
         }
 
         else if ((robot.getRuns() > 0) & !seerMode) {
@@ -31,12 +31,17 @@ public class GrandFinale {
 
         pollRun++;
         surroundings.refresh(robot);  //Works out the surroundings again for this tick.
-        if (pollRun == 1 && seerMode)
+        Point location = robot.getLocation();
+        if (location.x == 0 && location.y == 0 && seerMode)
             robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
         else if (explorerMode)
             exploreControl(robot);
         else
             backtrackControl(robot);
+
+        if (location.x == 0 && location.y == 0 && !seerMode) { // If you've chosen a heading and you're at square 1.
+            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+        }
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
