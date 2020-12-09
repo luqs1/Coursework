@@ -62,6 +62,10 @@ public class GrandFinale {
                 if (seerMode) {
                     robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
                 }
+                else if (surroundings.passage.numberOf == 0) {
+                    robot.face(IRobot.BEHIND);
+                    explorerMode = false;
+                }
                 else {
                     //System.out.println("Crossroads or Junction");
                     robotData.recordJunction(robot); // Records Junction in RobotData.

@@ -42,9 +42,16 @@ public class Explorer {
         break;
       case 3:
       case 4:
-        //System.out.println("Crossroads or Junction");
-        direction = junction(); // Both Crossroads and Junctions are equivalent.
-        robotData.recordJunction(robot); // Records Junction in RobotData.
+        if (surroundings.passage.numberOf == 0) {
+          robot.face(IRobot.BEHIND);
+          System.out.println("activated");
+          explorerMode = false;
+        }
+        else {
+          //System.out.println("Crossroads or Junction");
+          direction = junction(); // Both Crossroads and Junctions are equivalent.
+          robotData.recordJunction(robot); // Records Junction in RobotData.
+        }
         break;
     }
     //System.out.println(surroundings.nonWall.numberOf);

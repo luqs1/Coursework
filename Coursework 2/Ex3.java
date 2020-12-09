@@ -5,18 +5,22 @@ import java.util.ArrayList;
 Luqmaan Ahmed Exercise 3
 
 NOTE
-My exercise 2 and 3 are equivalent. Thus I can only contrast Ex2/3 with Ex1.
+My exercise 2 and 3 are almost the same. Thus I will contrast Ex2/3 with Ex1.
 
 For the record, I think that If i didn't record every junction as i did in Ex2, but recorded junctions selectively based
 on the number of BeenBefore cells, there would be a possibility of that program failing on loopy mazes.
 
-ENDNOTE
+The only addition from Ex2 to Ex3 is an optimisation: Specifically lines 71-80 were altered so that the robot would start
+backtracking if it came across a completely discovered junction. This was verified to be a positive change that reduced
+the mean and the variance of steps taken. (Observed statistically)
+
+END NOTE
 
 My robot in Exercise 1 could only store 1 heading per cell on the maze, this meant that if the robot followed a loop and
 started backtracking, it could only backtrack with either the more recent heading, or the older heading.
 
-My exercise 2/3 program used a stack and recorded every junction it came across. However as it was naive to where it was
-on the maze, it was able to store multiple headings for the same cell. This meant that when backtracking it would always
+My exercise 2/3 program used a stack and recorded every junction it came across. As it was naive to where it was
+on the maze, it was able to store multiple headings for each cell. This meant that when backtracking it would always
 be able to backtrack the "long way" out which guarantees that it finds all the passages that are possible if the maze was
 solvable.
 
@@ -64,9 +68,16 @@ public class Ex3 {
         break;
       case 3:
       case 4:
-        //System.out.println("Crossroads or Junction");
-        direction = junction(); // Both Crossroads and Junctions are equivalent.
-        robotData.recordJunction(robot); // Records Junction in RobotData.
+        if (surroundings.passage.numberOf == 0) {
+          robot.face(IRobot.BEHIND);
+          System.out.println("activated");
+          explorerMode = false;
+        }
+        else {
+          //System.out.println("Crossroads or Junction");
+          direction = junction(); // Both Crossroads and Junctions are equivalent.
+          robotData.recordJunction(robot); // Records Junction in RobotData.
+        }
         break;
     }
     //System.out.println(surroundings.nonWall.numberOf);
@@ -164,60 +175,6 @@ public class Ex3 {
     }
 
   }
-  /*
-  private class RobotData {
-    public int junctionCounter;
-
-    public class Junction extends Point {
-      public int arrivalHeading;
-
-      public Junction(int x, int y, int heading) {
-        super(x, y);
-        arrivalHeading = heading;
-      }
-
-      public String toString() {
-        return "Junction{" +
-                "arrivalHeading=" + arrivalHeading +
-                super.toString() + '}';
-      }
-    }
-
-    private Map<Point, Junction> junctions = new HashMap<>(); // Is private to enforce use of recordJunction and getJunction.
-    // For any Point in the maze, returns the junction. Could have reduced memory usage with <Point, Integer>, with the
-    // heading as an Integer, and then returned new Junction(point.x, point.y, heading), but it's not scalable if we add more than a heading.
-
-
-    public void resetJunctionCounter() {
-      junctionCounter = 0; // Tne behaviour of this function will need to be redesigned for when we try to remember Maze Solutions.
-      junctions = new HashMap<>();
-    }
-
-    public void recordJunction(Point point, IRobot robot) {
-      int heading = robot.getHeading();
-      if (junctions.get(point) == null) { // This makes sure junctions aren't overwritten.
-        junctions.put(point, new Junction(point.x, point.y, heading));
-        junctionCounter++;
-      }
-    }
-
-    public Junction getJunction(Point point) {
-      return junctions.get(point);
-    }
-
-    public int searchJunction(Point point) {
-      Junction junction  = junctions.get(point);
-      if (junction != null)
-        return junction.arrivalHeading; // returns the heading.
-      return -1; // This is an error
-    }
-
-    public void printJunction(Junction junction) {
-      System.out.println(junction.toString());
-    }
-  }
-  */
-
   private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
 
