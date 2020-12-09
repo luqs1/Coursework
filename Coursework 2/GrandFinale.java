@@ -5,21 +5,29 @@ import java.util.HashMap;
 import java.util.Map;
 import static java.lang.Math.abs;
 
+/*
+Grand Finale - Luqmaan Ahmed
+
+ */
+
 public class GrandFinale {
     private final String[] headings = {"North", "East", "South", "West"};
     private final int[][] offsets = {{0,1,0,-1},{-1,0,1,0}}; // /Looks at the x and y offsets from the curr location depending on heading.
-    private Point target;
-    private Point start;
-    private RobotData robotData;
+
+    private Point target; // Stores target location once per maze
+    private Point start; // Likewise.
+
+    private RobotData robotData; // As before, except for altJunctions.
     private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
     // made before knowledge of robotData.
 
+
     private int pollRun = 0; // Counts which "tick".
     private boolean explorerMode; // true for explorer, false for backtracking
-    private boolean seerMode;
+    private boolean seerMode; // A mode for when the maze has been explored once at least.
 
     public void controlRobot(IRobot robot) {
-        if ((robot.getRuns() == 0) && (pollRun == 0)) {
+        if ((robot.getRuns() == 0) && (pollRun == 0)) { // All the setup for a new maze.
             robotData = new RobotData();
             explorerMode = true;
             seerMode = false;
@@ -28,7 +36,7 @@ public class GrandFinale {
             //robotData.altJunctions.put(robot.getLocation(), robot.getHeading()); // I think it becomes redundant.
         }
 
-        else if ((robot.getRuns() > 0) & !seerMode) {
+        else if ((robot.getRuns() > 0) & !seerMode) { // Switches into seerMode.
             seerMode = true;
             System.out.println("Going for the 2nd time or more.");
         }
@@ -36,14 +44,15 @@ public class GrandFinale {
         pollRun++;
 
         surroundings.refresh(robot);  //Works out the surroundings again for this tick.
-        if (explorerMode)
-            exploreControl(robot);
+        if (explorerMode) // in seerMode this is always true. The optimal route contains no deadEnds to kick into backtrack.
+            exploreControl(robot); // so there's no point in adding ... || seerMode) to the if.
         else
             backtrackControl(robot);
         if (start.x == robot.getLocation().x && start.y == robot.getLocation().y) {
-            if (seerMode)
+            // The start is a very special case as it is can be a "junction" when it has 2 nonWalls.
+            if (seerMode) // Overrides to get the start direction from Map.
                 robot.setHeading(robotData.altJunctions.get(surroundings.location));
-            else
+            else // Updates the start cell as if it were a junction.
                 robotData.altJunctions.put(surroundings.location, robot.getHeading()); // The new heading.
         }
 
@@ -64,10 +73,10 @@ public class GrandFinale {
                 break;
             case 3:
             case 4:
-                if (seerMode) {
+                if (seerMode) { // Important, will just get best heading from the Map.
                     robot.setHeading(robotData.altJunctions.get(surroundings.location));
                 }
-                else if (surroundings.passage.numberOf == 0) {
+                else if (surroundings.passage.numberOf == 0) { // Backtracks when there's a fully discovered junction ahead.
                     robot.face(IRobot.BEHIND);
                     explorerMode = false;
                 }
@@ -104,7 +113,6 @@ public class GrandFinale {
                     robot.setHeading(IRobot.NORTH + headingShift);
                     // Altogether does the equivalent of using a circular array for the headings.
                 }
-                robotData.altJunctions.put(surroundings.location, robot.getHeading()); // The new heading.
         }
     }
 
