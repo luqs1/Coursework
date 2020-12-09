@@ -86,8 +86,8 @@ public class Ex1 {
       case 4:
         //System.out.println("Crossroads or Junction");
         direction = junction(); // Both Crossroads and Junctions are equivalent.
-        robotData.recordJunction(robot.getLocation(), robot); // Records Junction in RobotData.
-        robotData.printJunction(robotData.getJunction(robot.getLocation()));
+        robotData.recordJunction(surroundings.location, robot); // Records Junction in RobotData.
+        robotData.printJunction(robotData.getJunction(surroundings.location));
         break;
     }
     //System.out.println(surroundings.nonWall.numberOf);
@@ -110,7 +110,7 @@ public class Ex1 {
           robot.face(junction());
         }
         else {
-          int arrivalHeading = robotData.searchJunction(robot.getLocation());
+          int arrivalHeading = robotData.searchJunction(surroundings.location);
           int headingShift = (arrivalHeading - IRobot.NORTH) -2;
           headingShift = headingShift < 0? headingShift + 4: headingShift;
           robot.setHeading(IRobot.NORTH + headingShift);
@@ -206,7 +206,7 @@ public class Ex1 {
 
   private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
-
+    public Point location;
     public ExitType nonWall;
     public ExitType passage;
     public ExitType beenBefore;
@@ -225,6 +225,7 @@ public class Ex1 {
       nonWall = exitsCreate(robot, IRobot.WALL, true);
       passage = exitsCreate(robot, IRobot.PASSAGE, false);
       beenBefore = exitsCreate(robot, IRobot.BEENBEFORE, false);
+      location = robot.getLocation();
     }
 
     private ExitType exitsCreate(IRobot robot, int object, boolean invert) { // creates an ExitType
