@@ -9,7 +9,6 @@ public class GrandFinale {
     private final String[] headings = {"North", "East", "South", "West"};
     private final int[][] offsets = {{0,1,0,-1},{-1,0,1,0}}; // /Looks at the x and y offsets from the curr location depending on heading.
     private Point target;
-    private Point start;
     private RobotData robotData;
     private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
     // made before knowledge of robotData.
@@ -24,7 +23,6 @@ public class GrandFinale {
             explorerMode = true;
             seerMode = false;
             target = robot.getTargetLocation();
-            start = robot.getLocation();
             //robotData.altJunctions.put(robot.getLocation(), robot.getHeading()); // I think it becomes redundant.
         }
 
@@ -42,11 +40,9 @@ public class GrandFinale {
                 exploreControl(robot);
             else
                 backtrackControl(robot);
-
-            if (start.x == robot.getLocation().x && start.y == robot.getTargetLocation().y) {
-                robotData.altJunctions.put(surroundings.location, surroundings.heading);
-            }
         }
+        robotData.altJunctions.put(surroundings.location, robot.getHeading());
+        System.out.println(robot.getHeading());
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
@@ -76,7 +72,7 @@ public class GrandFinale {
                     robotData.recordJunction(robot); // Records Junction in RobotData.
                     robot.face(junction()); // Both Crossroads and Junctions are equivalent.
                 }
-                robotData.altJunctions.put(surroundings.location, surroundings.heading);
+                break;
         }
         //System.out.println(surroundings.nonWall.numberOf);
         //System.out.println(surroundings.passage.numberOf);
@@ -104,7 +100,6 @@ public class GrandFinale {
                     robot.setHeading(IRobot.NORTH + headingShift);
                     // Altogether does the equivalent of using a circular array for the headings.
                 }
-                robotData.altJunctions.put(surroundings.location, surroundings.heading);
         }
     }
 
@@ -138,7 +133,7 @@ public class GrandFinale {
         return (IRobot.AHEAD + index);
     }
 
-    private int manhattan(int direction) { // The manhattan distance is used as a heuristic to prioritise getting closer.
+    private int manhattan(int direction) {
         int heading = (surroundings.heading - IRobot.NORTH + direction) % 4;
         int xDif = abs(surroundings.location.x + offsets[0][heading] - target.x);
         int yDif = abs(surroundings.location.y + offsets[1][heading] - target.y);
