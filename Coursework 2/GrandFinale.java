@@ -105,6 +105,11 @@ public class GrandFinale {
                 if (surroundings.passage.numberOf > 0){  // This is the case when explorable passages are available.
                     explorerMode = true;  //Going down unexplored path.
                     robot.face(junction());
+                    robotData.altJunctions.put(surroundings.location, robot.getHeading()); // The new heading.
+                    /*
+                    The line above is the reason I'm using a Map: I can overwrite the heading for a square once the robot
+                    comes back to it. This would be much more contrived in a stack or array with Points.
+                     */
                 }
                 else {
                     int arrivalHeading = robotData.searchJunction();
