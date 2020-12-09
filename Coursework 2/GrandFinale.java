@@ -18,7 +18,6 @@ public class GrandFinale {
     private boolean seerMode;
 
     public void controlRobot(IRobot robot) {
-
         if ((robot.getRuns() == 0) && (pollRun == 0)) {
             robotData = new RobotData();
             explorerMode = true;
@@ -30,7 +29,6 @@ public class GrandFinale {
         else if ((robot.getRuns() > 0) & !seerMode) {
             seerMode = true;
             System.out.println("Going for the 2nd time or more.");
-            pollRun = 0;
         }
 
         pollRun++;
@@ -107,6 +105,7 @@ public class GrandFinale {
 
     public void reset() {
         robotData.resetJunctionCounter();
+        pollRun = 0;
     }
 
     private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.

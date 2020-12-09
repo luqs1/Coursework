@@ -121,6 +121,7 @@ public class Ex1 {
 
   public void reset() {
     robotData.resetJunctionCounter();
+    pollRun = 0;
   }
   
   private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.
