@@ -8,6 +8,30 @@ import static java.lang.Math.abs;
 /*
 Grand Finale - Luqmaan Ahmed
 
+The approach I took to this exercise is slightly different from the Route A and Route B outlined in the guide. I wanted
+to be able to conveniently overwrite the assumed optimal direction for a junction, as I saw it was useful for a loopy maze.
+
+Therefore I made use of a (Hash)Map to store the heading for each junction. The important detail about this data structure
+was that I could conveniently keep overwriting the heading for any junction, whereas the stack approach was a bit convoluted,
+ as I noted from when I used it in Ex2 and Ex3.
+
+But aside from discussing those fine points, another thing I introduced is a heuristicSelect instead of randomlySelect.
+This means I chose a shorter path for loopy mazes than I would otherwise. The heuristic is based on the manhattan dist
+to the target.
+
+The robot deals with loopy mazes very well, uses heuristic to great effect. Changed reset so that it works on a new maze.
+Works on repeat runs of the same maze, but doesn't further optimise, as if it could it should have done so from the start.
+
+I chose not to explore the entire Maze in the first run. This has no effect on a Prim maze as there's only one path for those,
+but could make a loopy maze have a very short path. For me, the manhattan heuristic does a very good job of finding a very
+short route anyway, and any loops are trimmed in the second run.
+
+The other approach I would have considered, is one where I implement the A* algorithm, as that would reliably give me the
+shortest path, but I think my approach takes some of the advantages of the A* algorithm without doing as much computation.
+
+I also tested against the blank maze and the hill maze, and the heuristic had a positive effect on those two as well. On
+the first run of a hillMaze it possibly failed miserably to get a nice path but learned properly for subsequent runs. It
+would solve the blank maze optimally from the start.
  */
 
 public class GrandFinale {
