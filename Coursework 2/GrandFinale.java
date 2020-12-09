@@ -40,8 +40,8 @@ public class GrandFinale {
                 exploreControl(robot);
             else
                 backtrackControl(robot);
+            robotData.altJunctions.put(surroundings.location, robot.getHeading()); // The new heading.
         }
-        robotData.altJunctions.put(surroundings.location, robot.getHeading());
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
