@@ -11,8 +11,9 @@ Grand Finale - Luqmaan Ahmed
  */
 
 public class GrandFinale {
-    private final String[] headings = {"North", "East", "South", "West"};
+    // private final String[] headings = {"North", "East", "South", "West"}; // For printing headings in tests.
     private final int[][] offsets = {{0,1,0,-1},{-1,0,1,0}}; // /Looks at the x and y offsets from the curr location depending on heading.
+    // See manhattan for more.
 
     private Point target; // Stores target location once per maze
     private Point start; // Likewise.
@@ -59,8 +60,6 @@ public class GrandFinale {
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
-        boolean recording = false;
-        int direction = IRobot.AHEAD;
         switch(surroundings.nonWall.numberOf){
             case 1:
                 //System.out.println("Dead End");
@@ -123,7 +122,7 @@ public class GrandFinale {
 
     public void reset() {
         robotData.resetJunctionCounter();
-        pollRun = 0;
+        pollRun = 0; // Important; allows the robot to run multiple mazes in a single execute.
     }
 
     private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.
@@ -138,10 +137,16 @@ public class GrandFinale {
     }
 
     private int heuristicSelect(boolean[] array){ //This returns the best heuristic direction from an array of directions.
-        int best = Integer.MAX_VALUE;
+        /*
+        This is a very important optimisation for a loopy maze as it prioritises routes that go right towards the target.
+        It does however make the robots first run on Prims longer sometimes. As it had a net positive effect on the second
+        run altogether, I made use of it.
+        The heuristicSelect is only important for junctions, so randomlySelect is still used for corridors.
+         */
+        int best = Integer.MAX_VALUE; // Is definitely bigger than the biggest manhattan distance possible in the maze.
         int index = 0;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) { // Chooses the direction with the smallest manhattan dist to the target.
             int dist = manhattan(i);
             if (array[i] && i != 2 && dist < best) {
                 best = dist;
@@ -151,8 +156,12 @@ public class GrandFinale {
         return (IRobot.AHEAD + index);
     }
 
-    private int manhattan(int direction) {
-        int heading = (surroundings.heading - IRobot.NORTH + direction) % 4;
+    private int manhattan(int direction) { // This is why i need abs, to get an estimation for how good a cell is.
+        /*
+        This is also why I need the offsets[][], it allows me to obtain the coordinates for the cell the robot is looking at
+        by getting the heading from the direction and then manipulating x and y coords based on that.
+         */
+        int heading = (surroundings.heading - IRobot.NORTH + direction) % 4; // Used modulus rather than ternary as before.
         int xDif = abs(surroundings.location.x + offsets[0][heading] - target.x);
         int yDif = abs(surroundings.location.y + offsets[1][heading] - target.y);
         return  xDif + yDif;
@@ -176,7 +185,7 @@ public class GrandFinale {
         return heuristicSelect(surroundings.passage.isType);
     }
 
-    private class RobotData {  //This is a modification of the original RobotData to remove wasteful storage.
+    private static class RobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
         ArrayList<Integer> junctions = new ArrayList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
         public Map<Point, Integer> altJunctions = new HashMap<>();
@@ -190,14 +199,6 @@ public class GrandFinale {
         public void resetJunctionCounter(){ // When maze resets.
             junctions = new ArrayList<>();
             //System.out.println(altJunctions);
-        }
-
-        public void printJunction(){  // Acts more like printHeading now.
-            System.out.println(getJunction());
-        }
-
-        public Integer getJunction(){ //For Debugging, doesn't pop.
-            return junctions.get(junctionCounter()-1);
         }
 
         public void recordJunction(IRobot robot){ // Pushes junction to the junctions stack.
