@@ -42,7 +42,6 @@ public class GrandFinale {
                 backtrackControl(robot);
         }
         robotData.altJunctions.put(surroundings.location, robot.getHeading());
-        System.out.println(robot.getHeading());
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
