@@ -3,9 +3,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import static java.lang.Math.abs;
 
 public class GrandFinale {
     private final String[] headings = {"North", "East", "South", "West"};
+    private final int[][] offsets = {{0,1,0,-1},{-1,0,1,0}}; // /Looks at the x and y offsets from the curr location depending on heading.
+    private Point target;
     private RobotData robotData;
     private final Surroundings surroundings = new Surroundings(); // A class I made for working one which directions were passages and nonWalls.
     // made before knowledge of robotData.
@@ -20,6 +23,7 @@ public class GrandFinale {
             robotData = new RobotData();
             explorerMode = true;
             seerMode = false;
+            target = robot.getTargetLocation();
             //robotData.altJunctions.put(robot.getLocation(), robot.getHeading()); // I think it becomes redundant.
         }
 
@@ -116,6 +120,27 @@ public class GrandFinale {
         return (IRobot.AHEAD + chosen.get(randNo));
     }
 
+    private int heuristicSelect(boolean[] array){ //This returns the best heuristic direction from an array of directions.
+        int best = Integer.MAX_VALUE;
+        int index = 0;
+
+        for (int i = 0; i < 4; i++) {
+            int dist = manhattan(i);
+            if (array[i] && i != 2 && dist < best) {
+                best = dist;
+                index = i;
+            }
+        }
+        return (IRobot.AHEAD + index);
+    }
+
+    private int manhattan(int direction) {
+        int heading = (surroundings.heading - IRobot.NORTH + direction) % 4;
+        int xDif = abs(surroundings.location.x + offsets[0][heading] - target.x);
+        int yDif = abs(surroundings.location.y + offsets[1][heading] - target.y);
+        return  xDif + yDif;
+    }
+
     private int deadEnd() { // Looks through the Surroundings to find the only nonWallExit and returns it.
         for (int i=0; i < 4; i++){
             if (surroundings.nonWall.isType[i])
@@ -130,8 +155,8 @@ public class GrandFinale {
 
     private int junction(){ // Does try to go for a passage if possible.
         if (surroundings.passage.numberOf == 0)
-            return randomlySelect(surroundings.nonWall.isType);
-        return randomlySelect(surroundings.passage.isType);
+            return heuristicSelect(surroundings.nonWall.isType);
+        return heuristicSelect(surroundings.passage.isType);
     }
 
     private class RobotData {  //This is a modification of the original RobotData to remove wasteful storage.
@@ -173,6 +198,7 @@ public class GrandFinale {
     private static class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
         public Point location;
+        public int heading;
         public ExitType nonWall;
         public ExitType passage;
         public ExitType beenBefore;
@@ -192,6 +218,7 @@ public class GrandFinale {
             passage = exitsCreate(robot, IRobot.PASSAGE, false);
             beenBefore = exitsCreate(robot, IRobot.BEENBEFORE, false);
             location = robot.getLocation();
+            heading = robot.getHeading();
         }
 
         private ExitType exitsCreate(IRobot robot, int object, boolean invert) { // creates an ExitType
