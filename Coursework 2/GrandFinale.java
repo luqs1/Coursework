@@ -30,18 +30,18 @@ public class GrandFinale {
         }
 
         pollRun++;
-        surroundings.refresh(robot);  //Works out the surroundings again for this tick.
         Point location = robot.getLocation();
-        if (location.x == 0 && location.y == 0 && seerMode)
-            robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
-        else if (explorerMode)
-            exploreControl(robot);
-        else
-            backtrackControl(robot);
-
-        if (location.x == 0 && location.y == 0 && !seerMode) { // If you've chosen a heading and you're at square 1.
-            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+        if (seerMode)
+            robot.setHeading(robotData.altJunctions.get(location));
+        else {
+            surroundings.refresh(robot);  //Works out the surroundings again for this tick.
+            if (explorerMode)
+                exploreControl(robot);
+            else
+                backtrackControl(robot);
         }
+        robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+        System.out.println(robot.getHeading());
     }
 
     private void exploreControl(IRobot robot){  //DEBUGGING: WORKS FINE just exploring.
@@ -66,15 +66,11 @@ public class GrandFinale {
                     //System.out.println("Crossroads or Junction");
                     robotData.recordJunction(robot); // Records Junction in RobotData.
                     robot.face(junction()); // Both Crossroads and Junctions are equivalent.
-                    recording = true;
                 }
                 break;
         }
         //System.out.println(surroundings.nonWall.numberOf);
         //System.out.println(surroundings.passage.numberOf);
-        if (recording) {
-            robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
-        }
     }
 
     private void backtrackControl(IRobot robot){ // Backtracking mode, activates after a junction.
@@ -148,7 +144,7 @@ public class GrandFinale {
 
         public void resetJunctionCounter(){ // When maze resets.
             junctions = new ArrayList<>();
-            System.out.println(altJunctions);
+            //System.out.println(altJunctions);
         }
 
         public void printJunction(){  // Acts more like printHeading now.
