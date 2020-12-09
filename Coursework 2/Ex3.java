@@ -113,18 +113,18 @@ public class Ex3 {
     robotData.resetJunctionCounter();
     pollRun = 0;
   }
-  
+
   private int randomlySelect(boolean[] array){  // This returns a random valid direction from an array of direction validity.
     ArrayList<Integer> chosen = new ArrayList<>();
-    for (int i=0; i < 4; i++){ 
+    for (int i=0; i < 4; i++){
       if (array[i] && i != 2) // Doesn't check or include BEHIND.
 	      chosen.add(i);
     }
     int randNo = (int) Math.floor(Math.random()*chosen.size());
     //System.out.println(chosen.get(randNo));
     return (IRobot.AHEAD + chosen.get(randNo));
-  }  
-  
+  }
+
   private int deadEnd() { // Looks through the Surroundings to find the only nonWallExit and returns it.
     for (int i=0; i < 4; i++){
       if (surroundings.nonWall.isType[i])
@@ -132,21 +132,21 @@ public class Ex3 {
     }
     return -1; // Error code
   }
-  
+
   private int corridor(){ // Doesn't check for optimal passage as there is only direction to choose anyway.
     return randomlySelect(surroundings.nonWall.isType);
   }
-  
+
   private int junction(){ // Does try to go for a passage if possible.
     if (surroundings.passage.numberOf == 0)
       return randomlySelect(surroundings.nonWall.isType);
     return randomlySelect(surroundings.passage.isType);
   }
 
-  private class EfficientRobotData {  //This is a modification of the original RobotData to remove wasteful storage.
+  private static class EfficientRobotData {  //This is a modification of the original RobotData to remove wasteful storage.
 
     ArrayList<Integer> junctions = new ArrayList<>(); // Uses a Stack data structure instead of a Map to navigate the tree.
-    
+
     // My previous implementation had a Junction class which I removed, as it would only store heading, to save more space.
 
     public int junctionCounter() {  // No longer needs to be independently stored. Is now equivalent to the size of the list.
@@ -156,15 +156,6 @@ public class Ex3 {
     public void resetJunctionCounter(){ // When maze resets.
       junctions = new ArrayList<>();
     }
-
-    public void printJunction(){  // Acts more like printHeading now.
-      System.out.println(getJunction());
-    }
-
-    public Integer getJunction(){ //For Debugging, doesn't pop.
-      return junctions.get(junctionCounter()-1);
-    }
-
     public void recordJunction(IRobot robot){ // Pushes junction to the junctions stack.
       int heading = robot.getHeading();
       junctions.add(heading);
@@ -176,14 +167,14 @@ public class Ex3 {
     }
 
   }
-  private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
+  private static class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
 
     public ExitType nonWall;
     public ExitType passage;
     public ExitType beenBefore;
 
-    public class ExitType { // A class that lets you have a counter and array for each type of exit.
+    public static class ExitType { // A class that lets you have a counter and array for each type of exit.
       public int numberOf;  // The number of such exits.
       public boolean[] isType; // true if the exit is of ExitType starting with Forward going clockwise.
 

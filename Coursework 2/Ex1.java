@@ -153,10 +153,10 @@ public class Ex1 {
     return randomlySelect(surroundings.passage.isType);
   }
 
-  private class RobotData {
+  private static class RobotData {
     public int junctionCounter;
 
-    public class Junction extends Point {
+    public static class Junction extends Point {
       public int arrivalHeading;
 
       public Junction(int x, int y, int heading) {
@@ -205,14 +205,14 @@ public class Ex1 {
     }
   }
 
-  private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
+  private static class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
     public Point location;
     public ExitType nonWall;
     public ExitType passage;
     public ExitType beenBefore;
 
-    public class ExitType { // A class that lets you have a counter and array for each type of exit.
+    public static class ExitType { // A class that lets you have a counter and array for each type of exit.
       public int numberOf;  // The number of such exits.
       public boolean[] isType; // true if the exit is of ExitType starting with Forward going clockwise.
 
