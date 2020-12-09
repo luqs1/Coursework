@@ -154,61 +154,7 @@ public class Ex2 {
     public int searchJunction(){ // Pops junction from stack.
       return junctions.remove(junctionCounter()-1);
     }
-
   }
-  /* Old RobotData
-  private class RobotData {
-    public int junctionCounter;
-
-    public class Junction extends Point {
-      public int arrivalHeading;
-
-      public Junction(int x, int y, int heading) {
-        super(x, y);
-        arrivalHeading = heading;
-      }
-
-      public String toString() {
-        return "Junction{" +
-                "arrivalHeading=" + arrivalHeading +
-                super.toString() + '}';
-      }
-    }
-
-    private Map<Point, Junction> junctions = new HashMap<>(); // Is private to enforce use of recordJunction and getJunction.
-    // For any Point in the maze, returns the junction. Could have reduced memory usage with <Point, Integer>, with the
-    // heading as an Integer, and then returned new Junction(point.x, point.y, heading), but it's not scalable if we add more than a heading.
-
-
-    public void resetJunctionCounter() {
-      junctionCounter = 0; // Tne behaviour of this function will need to be redesigned for when we try to remember Maze Solutions.
-      junctions = new HashMap<>();
-    }
-
-    public void recordJunction(Point point, IRobot robot) {
-      int heading = robot.getHeading();
-      if (junctions.get(point) == null) { // This makes sure junctions aren't overwritten.
-        junctions.put(point, new Junction(point.x, point.y, heading));
-        junctionCounter++;
-      }
-    }
-
-    public Junction getJunction(Point point) {
-      return junctions.get(point);
-    }
-
-    public int searchJunction(Point point) {
-      Junction junction  = junctions.get(point);
-      if (junction != null)
-        return junction.arrivalHeading; // returns the heading.
-      return -1; // This is an error
-    }
-
-    public void printJunction(Junction junction) {
-      System.out.println(junction.toString());
-    }
-  }
-  */
 
   private class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
