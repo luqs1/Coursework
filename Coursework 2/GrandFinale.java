@@ -30,9 +30,8 @@ public class GrandFinale {
         }
 
         pollRun++;
-        Point location = robot.getLocation();
         if (seerMode)
-            robot.setHeading(robotData.altJunctions.get(location));
+            robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
         else {
             surroundings.refresh(robot);  //Works out the surroundings again for this tick.
             if (explorerMode)
@@ -40,7 +39,7 @@ public class GrandFinale {
             else
                 backtrackControl(robot);
         }
-        robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+        robotData.altJunctions.put(surroundings.location, robot.getHeading());
         System.out.println(robot.getHeading());
     }
 
@@ -60,7 +59,7 @@ public class GrandFinale {
             case 3:
             case 4:
                 if (seerMode) {
-                    robot.setHeading(robotData.altJunctions.get(robot.getLocation()));
+                    robot.setHeading(robotData.altJunctions.get(surroundings.location));
                 }
                 else if (surroundings.passage.numberOf == 0) {
                     robot.face(IRobot.BEHIND);
@@ -90,7 +89,7 @@ public class GrandFinale {
                 if (surroundings.passage.numberOf > 0){  // This is the case when explorable passages are available.
                     explorerMode = true;  //Going down unexplored path.
                     robot.face(junction());
-                    robotData.altJunctions.put(robot.getLocation(), robot.getHeading());
+                    robotData.altJunctions.put(surroundings.location, robot.getHeading());
                 }
                 else {
                     int arrivalHeading = robotData.searchJunction();
@@ -162,7 +161,7 @@ public class GrandFinale {
         public void recordJunction(IRobot robot){ // Pushes junction to the junctions stack.
             int heading = robot.getHeading();
             junctions.add(heading);
-            //System.out.println(robot.getLocation());
+            //System.out.println(surroundings.location);
         }
 
         public int searchJunction(){ // Pops junction from stack.
@@ -173,7 +172,7 @@ public class GrandFinale {
 
     private static class Surroundings { /* A class detailing the passages, nonWalls and number of each after each move in the maze. It reduces code redundancy vastly.
     Implemented before reading about RobotData.*/
-
+        public Point location;
         public ExitType nonWall;
         public ExitType passage;
         public ExitType beenBefore;
@@ -192,6 +191,7 @@ public class GrandFinale {
             nonWall = exitsCreate(robot, IRobot.WALL, true);
             passage = exitsCreate(robot, IRobot.PASSAGE, false);
             beenBefore = exitsCreate(robot, IRobot.BEENBEFORE, false);
+            location = robot.getLocation();
         }
 
         private ExitType exitsCreate(IRobot robot, int object, boolean invert) { // creates an ExitType
